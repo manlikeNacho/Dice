@@ -97,3 +97,57 @@ func TestController_RollDice_2ndRoll(t *testing.T) {
 	assert.Equal(t, 200, rr.Code)
 	assert.NotNil(t, rr.Body)
 }
+
+func TestController_EndGame(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepo := mocks.NewMockRepository(controller)
+	ctrl := controllers.New(mockRepo, 1)
+
+	mockRepo.EXPECT().CreateGame(&models.Game{Status: models.GameRunning, GeneratedNumber: 7}).Return(nil)
+	mockRepo.EXPECT().GetActiveGame().Return(&models.Game{GeneratedNumber: 7, Status: models.GameRunning}, nil)
+	mockRepo.EXPECT().UpdateGame(&models.Game{Status: models.GameEnded, GeneratedNumber: 7}).Return(nil)
+
+	mockRepo.CreateGame(&models.Game{Status: models.GameRunning, GeneratedNumber: 7})
+	mockRepo.UpdateGame(&models.Game{Status: models.GameEnded, GeneratedNumber: 7})
+
+	router.POST("/end_game", ctrl.RollDice)
+	rr := httptest.NewRecorder()
+	request, err := http.NewRequest(http.MethodPost, "/end_game", nil)
+	assert.NoError(t, err)
+
+	request.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(rr, request)
+	assert.Equal(t, 200, rr.Code)
+	assert.NotNil(t, rr.Body)
+}
+
+func TestController_GetTransactions(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepo := mocks.NewMockRepository(controller)
+	ctrl := controllers.New(mockRepo, 1)
+	testDb := []*models.Transaction{{Amount: 50, Type: models.Credit}}
+
+	mockRepo.EXPECT().CreateTransaction(&models.Transaction{Amount: 50, Type: models.Credit}).Return(nil)
+	mockRepo.EXPECT().GetTransactions().Return(testDb, nil)
+
+	err := mockRepo.CreateTransaction(&models.Transaction{Amount: 50, Type: models.Credit})
+	transactions, err := mockRepo.GetTransactions()
+	assert.Nil(t, err)
+	assert.Equal(t, testDb, transactions)
+
+	router.GET("/transactions", ctrl.RollDice)
+	rr := httptest.NewRecorder()
+	request, err := http.NewRequest(http.MethodGet, "/transactions", nil)
+	assert.NoError(t, err)
+
+	request.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(rr, request)
+	assert.Equal(t, 200, rr.Code)
+	assert.NotNil(t, rr.Body)
+}
