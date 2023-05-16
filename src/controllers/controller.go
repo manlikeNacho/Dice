@@ -209,6 +209,17 @@ func (ct controller) handleSecondRoll(activeGame *models.Game, c *gin.Context) {
 	usersTotal := activeGame.Roll1 + activeGame.Roll2
 	userWins := usersTotal == activeGame.GeneratedNumber
 
+	if userWins {
+		_, err := ct.repo.UpdateUserBalance(ct.currentUserID, FixedGameWinAmount, models.Credit)
+		if err != nil {
+			log.Printf("Error crediting user:%v \n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "error crediting user.",
+			})
+			return
+		}
+	}
+
 	// deduct user after playing second die
 	currentBalance, err := ct.repo.UpdateUserBalance(ct.currentUserID, FixedPlayedDuoAmount, models.Debit)
 	if err != nil {
