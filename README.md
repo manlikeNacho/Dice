@@ -13,7 +13,7 @@ A simple dice rolling application.
 
 ## Introduction
 
-Dice is a lightweight application that allows you to roll virtual dice. It can be used for various purposes such as board games, role-playing games, or any situation where dice rolling is required.
+Dice is a lightweight application that allows you to roll virtual dice. It can be used for various purposes such as board games. When a game is started, a commitment fee of 20 sats is deducted from the user’s wallet, and a number is generated randomly between 2 and 12 and stored. After a game has been started, the user can roll dice twice, and the result of both dice rolls is summed up. If the sum of the 2 numbers is equal to the number generated at game start-up, the user wins 10 sats.The user can roll dice as many times as he wants in a single game; however, each dice roll duo costs the user 5 sats and should be charged on the first die roll of the duo.
 
 ## Features
 
